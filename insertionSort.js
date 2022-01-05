@@ -5,6 +5,8 @@ function insertionSort (list) {
     for(let j = i; j >= 0; j--){
       if(list[j] < list[j -1]){
         [list[j], list[j - 1]] = [list[j-1], list[j]]
+      } else {
+        break
       }
     }
   }
