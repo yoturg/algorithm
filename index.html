@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+      border: 0;
+    }
+    .canvas-contain {
+      width: 100vw;
+      height: 100vw;
+    }
+    .canvas-contain canvas {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+  <script>
+    const tree = [2,7,26,25,19,17,1,90,3,36]
+    function drawNode (ctx, val, x, y) {
+      ctx.save()
+      ctx.beginPath()
+      ctx.arc(x, y, 20, 0, 2 * Math.PI)
+      ctx.strokeStyle= '#fff'
+      ctx.stroke()
+
+      ctx.font = "18px bold 黑体"
+      ctx.fillStyle = "#fff";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(val, x, y)
+      ctx.restore()
+    }
+    function drawTree (ctx, tree, x, y, index=0, level = 0) {
+      const left = index * 2 + 1
+      const right = index * 2 + 2
+      drawNode(ctx, tree[index], x, y)
+      if(left < tree.length) {
+        drawTree(ctx, tree, x - 40, y + 40, left, level + 1)
+      }
+      if(right < tree.length){
+        drawTree(ctx, tree, x + 40, y + 40, right, level + 1)
+      }
+    }
+    window.onload = function () {
+      const canvas = document.getElementById('canvas')
+      const ctx = canvas.getContext('2d')
+      console.log(ctx)
+      ctx.fillStyle = '#000'
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+      drawTree(ctx, tree, canvas.width / 2, 50)
+
+      // ctx.beginPath()
+      // ctx.arc(canvas.width / 2, 50, 20, 0, 2 * Math.PI)
+      // ctx.strokeStyle= '#fff'
+      // ctx.stroke()
+
+      // ctx.font = "18px bold 黑体"
+      // ctx.fillStyle = "#fff";
+      // ctx.textAlign = "center";
+      // ctx.textBaseline = "middle";
+      // ctx.fillText('20', canvas.width / 2, 50)
+    } 
+  </script>
+</head>
+<body>
+  <div class="canvas-contain">
+    <canvas id="canvas" width= '2000' height="2000"></canvas>
+  </div>
+</body>
+</html>
