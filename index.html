@@ -22,10 +22,14 @@
   </style>
   <script>
     const tree = [2,7,26,25,19,17,1,90,3,36]
+    function mathLog(x, y) {
+      return Math.log(y) / Math.log(x);
+    }
     function drawNode (ctx, val, x, y) {
       ctx.save()
       ctx.beginPath()
       ctx.arc(x, y, 20, 0, 2 * Math.PI)
+      ctx.closePath();
       ctx.strokeStyle= '#fff'
       ctx.stroke()
 
@@ -36,15 +40,52 @@
       ctx.fillText(val, x, y)
       ctx.restore()
     }
-    function drawTree (ctx, tree, x, y, index=0, level = 0) {
+    function drawLine (ctx, x1, y1, x2, y2) {
+      [x1, y1, x2, y2] = calcLinePoin(x1, y1, x2, y2)
+      ctx.beginPath();
+      // 起点
+       ctx.moveTo(x1, y1);
+      // 终点
+      ctx.lineTo(x2, y2);
+      ctx.closePath();
+      ctx.strokeStyle = '#fff'
+      ctx.stroke();
+    }
+    function calcLinePoin (x1, y1, x2, y2) {
+      const lineLength = Math.sqrt(Math.pow(x1-x2, 2) + Math.pow(y1 - y2, 2))
+      const xCut = Math.abs(x1 - x2) * (20 / lineLength)
+      const yCut = Math.abs(y1 - y2) * (20 / lineLength)
+      if(x1 < x2){
+        x1 += xCut
+        x2 -= xCut
+      } else {
+        x1 -= xCut
+        x2 += xCut
+      }
+
+      if(y1 < y2){
+        y1 += yCut
+        y2 -= yCut
+      } else {
+        y1 -= yCut
+        y2 += yCut
+      }
+
+      return [x1, y1, x2, y2]
+    }
+    function drawTree (ctx, tree, x, y, index=0, level = 0, fieldWidth) {
       const left = index * 2 + 1
       const right = index * 2 + 2
+      const levelTotal = Math.ceil(mathLog(2, tree.length))
+      fieldWidth = fieldWidth || Math.pow(2, levelTotal - 1) * 60 + 20
       drawNode(ctx, tree[index], x, y)
       if(left < tree.length) {
-        drawTree(ctx, tree, x - 40, y + 40, left, level + 1)
+        drawLine(ctx, x, y, x - fieldWidth /4, y + 40 + 10*level)
+        drawTree(ctx, tree, x - fieldWidth /4, y + 40 + 10*level, left, level + 1, fieldWidth /2)
       }
       if(right < tree.length){
-        drawTree(ctx, tree, x + 40, y + 40, right, level + 1)
+        drawLine(ctx, x, y, x + fieldWidth /4, y + 40 + 10*level)
+        drawTree(ctx, tree, x + fieldWidth /4, y + 40 + 10*level, right, level + 1, fieldWidth /2)
       }
     }
     window.onload = function () {
