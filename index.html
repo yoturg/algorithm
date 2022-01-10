@@ -21,92 +21,173 @@
     }
   </style>
   <script>
+    const Tools = {
+      calcLinePoin (x1, y1, x2, y2) {
+        const lineLength = Math.sqrt(Math.pow(x1-x2, 2) + Math.pow(y1 - y2, 2))
+        const xCut = Math.abs(x1 - x2) * (20 / lineLength)
+        const yCut = Math.abs(y1 - y2) * (20 / lineLength)
+        if(x1 < x2){
+          x1 += xCut
+          x2 -= xCut
+        } else {
+          x1 -= xCut
+          x2 += xCut
+        }
+
+        if(y1 < y2){
+          y1 += yCut
+          y2 -= yCut
+        } else {
+          y1 -= yCut
+          y2 += yCut
+        }
+
+        return [x1, y1, x2, y2]
+      },
+      mathLog(x, y) {
+        return Math.log(y) / Math.log(x);
+      },
+      delay (time) {
+        return new Promise(resole =>{
+          setTimeout(resole, time)
+        })
+      }
+    }
+  </script>
+  <script>
+    class Pencil {
+      constructor (ctx) {
+        this.ctx = ctx
+        this.canvas = ctx.canvas
+      }
+
+      setBackground (color) {
+        this.ctx.fillStyle = color
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
+      }
+
+      drawNode (val, x, y) {
+        this.ctx.save()
+        this.ctx.beginPath()
+        this.ctx.arc(x, y, 20, 0, 2 * Math.PI)
+        this.ctx.closePath();
+        this.ctx.strokeStyle= '#fff'
+        this.ctx.stroke()
+
+        this.ctx.font = "18px bold 黑体"
+        this.ctx.fillStyle = "#fff";
+        this.ctx.textAlign = "center";
+        this.ctx.textBaseline = "middle";
+        this.ctx.fillText(val, x, y)
+        this.ctx.restore()
+      }
+
+      drawLine (x1, y1, x2, y2) {
+        [x1, y1, x2, y2] = Tools.calcLinePoin(x1, y1, x2, y2)
+        this.ctx.beginPath();
+        // 起点
+        this.ctx.moveTo(x1, y1);
+        // 终点
+        this.ctx.lineTo(x2, y2);
+        this.ctx.closePath();
+        this.ctx.strokeStyle = '#fff'
+        this.ctx.stroke();
+      }
+
+    }
+  </script>
+  <script>
     const tree = [2,7,26,25,19,17,1,90,3,36]
-    function mathLog(x, y) {
-      return Math.log(y) / Math.log(x);
-    }
-    function drawNode (ctx, val, x, y) {
-      ctx.save()
-      ctx.beginPath()
-      ctx.arc(x, y, 20, 0, 2 * Math.PI)
-      ctx.closePath();
-      ctx.strokeStyle= '#fff'
-      ctx.stroke()
+    const result = []
 
-      ctx.font = "18px bold 黑体"
-      ctx.fillStyle = "#fff";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(val, x, y)
-      ctx.restore()
-    }
-    function drawLine (ctx, x1, y1, x2, y2) {
-      [x1, y1, x2, y2] = calcLinePoin(x1, y1, x2, y2)
-      ctx.beginPath();
-      // 起点
-       ctx.moveTo(x1, y1);
-      // 终点
-      ctx.lineTo(x2, y2);
-      ctx.closePath();
-      ctx.strokeStyle = '#fff'
-      ctx.stroke();
-    }
-    function calcLinePoin (x1, y1, x2, y2) {
-      const lineLength = Math.sqrt(Math.pow(x1-x2, 2) + Math.pow(y1 - y2, 2))
-      const xCut = Math.abs(x1 - x2) * (20 / lineLength)
-      const yCut = Math.abs(y1 - y2) * (20 / lineLength)
-      if(x1 < x2){
-        x1 += xCut
-        x2 -= xCut
-      } else {
-        x1 -= xCut
-        x2 += xCut
+
+    function drawList (pencil, list, x, y, index = 0) {
+      const fieldWidth = list.length * 60
+      const nodeX = x - fieldWidth / 2 + index * 60
+      if(list[index] !== undefined){
+
+        pencil.drawNode(list[index], nodeX, y)
       }
-
-      if(y1 < y2){
-        y1 += yCut
-        y2 -= yCut
-      } else {
-        y1 -= yCut
-        y2 += yCut
+      if(list[index+1]) {
+        drawList(pencil, list, x, y, index + 1)
       }
-
-      return [x1, y1, x2, y2]
     }
-    function drawTree (ctx, tree, x, y, index=0, level = 0, fieldWidth) {
+
+    function drawTree (pencil, tree, x, y, index=0, level = 0, fieldWidth) {
       const left = index * 2 + 1
       const right = index * 2 + 2
-      const levelTotal = Math.ceil(mathLog(2, tree.length))
+      const levelTotal = Math.ceil(Tools.mathLog(2, tree.length))
       fieldWidth = fieldWidth || Math.pow(2, levelTotal - 1) * 60 + 20
-      drawNode(ctx, tree[index], x, y)
+      if(tree[index]) {
+        pencil.drawNode(tree[index], x, y)
+      }
       if(left < tree.length) {
-        drawLine(ctx, x, y, x - fieldWidth /4, y + 40 + 10*level)
-        drawTree(ctx, tree, x - fieldWidth /4, y + 40 + 10*level, left, level + 1, fieldWidth /2)
+        pencil.drawLine(x, y, x - fieldWidth /4, y + 40 + 10*level)
+        drawTree(pencil, tree, x - fieldWidth /4, y + 40 + 10*level, left, level + 1, fieldWidth /2)
       }
       if(right < tree.length){
-        drawLine(ctx, x, y, x + fieldWidth /4, y + 40 + 10*level)
-        drawTree(ctx, tree, x + fieldWidth /4, y + 40 + 10*level, right, level + 1, fieldWidth /2)
+        pencil.drawLine(x, y, x + fieldWidth /4, y + 40 + 10*level)
+        drawTree(pencil, tree, x + fieldWidth /4, y + 40 + 10*level, right, level + 1, fieldWidth /2)
       }
     }
     window.onload = function () {
       const canvas = document.getElementById('canvas')
       const ctx = canvas.getContext('2d')
+
+      const p = new Pencil(ctx)
       console.log(ctx)
-      ctx.fillStyle = '#000'
-      ctx.fillRect(0, 0, canvas.width, canvas.height)
+      
+      p.setBackground('#000')
 
-      drawTree(ctx, tree, canvas.width / 2, 50)
+      // drawTree(p, tree, canvas.width / 2, 50)
 
-      // ctx.beginPath()
-      // ctx.arc(canvas.width / 2, 50, 20, 0, 2 * Math.PI)
-      // ctx.strokeStyle= '#fff'
-      // ctx.stroke()
 
-      // ctx.font = "18px bold 黑体"
-      // ctx.fillStyle = "#fff";
-      // ctx.textAlign = "center";
-      // ctx.textBaseline = "middle";
-      // ctx.fillText('20', canvas.width / 2, 50)
+      async function heapify(heap, index) {
+        const left = index * 2 + 1
+        const right = index * 2 + 2
+        let largeat = index
+
+        if(left < heap.length && heap[left] > heap[largeat]) {
+          largeat = left
+        }
+        if(right < heap.length && heap[right] > heap[largeat]) {
+          largeat = right 
+        }
+        if(largeat !== index) {
+          [heap[index], heap[largeat]] = [heap[largeat], heap[index]]
+          await heapify(heap, largeat)
+
+
+          p.setBackground('#000')
+          drawTree(p, tree, canvas.width / 2, 50)
+          drawList(p, tree, canvas.width /2, 400)
+          drawList(p, result, canvas.width /2, 460)
+          await Tools.delay(1000)
+        }
+
+      }
+
+      async function buildMaxHeap(heap) {
+        for(let i = Math.floor(heap.length / 2); i >= 0; i--) {
+          await heapify(heap, i)
+        }
+        return heap
+      }
+
+      (async () => {
+        await buildMaxHeap(tree)
+
+        while(tree.length >0) {
+          result.push(tree.shift())
+          await heapify(tree, 0)
+        }
+        p.setBackground('#000')
+        drawTree(p, tree, canvas.width / 2, 50)
+        drawList(p, tree, canvas.width /2, 400)
+        drawList(p, result, canvas.width /2, 460)
+        
+      })()
+
     } 
   </script>
 </head>

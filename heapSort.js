@@ -12,9 +12,8 @@ function heapify(heap, index) {
     largeat = right 
   }
   if(largeat !== index) {
-    
     [heap[index], heap[largeat]] = [heap[largeat], heap[index]]
-    heapify(largeat)
+    heapify(heap, largeat)
   }
   
 }
@@ -26,4 +25,15 @@ function buildMaxHeap(heap) {
   return heap
 }
 
-console.log(buildMaxHeap(orgin))
+function heapSort (list) {
+  const orgin = [...list]
+  const result = []
+  buildMaxHeap(orgin)
+  
+  while(orgin.length > 0) {
+    result.push(orgin.shift())
+    heapify(orgin, 0)
+  }
+  return result
+}
+console.log(heapSort(orgin))
